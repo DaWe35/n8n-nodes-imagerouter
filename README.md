@@ -1,6 +1,34 @@
 # [ImageRouter](https://imagerouter.io) Node for n8n
 
-docker commands here
+## Quick start (Docker)
+
+Build the image and start a local n8n instance with the ImageRouter node already available:
+
+```bash
+# From the repository root
+docker compose up --build
+```
+
+The first build will perform the following steps:
+1. Compile the TypeScript source of this project in an isolated Debian builder stage.
+2. Bundle the generated JavaScript and assets into `/home/node/.n8n/custom` inside the image.
+3. Launch n8n on port `5678` with the custom ImageRouter node pre-installed.
+
+### Environment variables
+The compose file supports a few optional environment variables that you can override when starting the stack.
+
+* `PORT` (default `5678`) – host port that n8n will be exposed on.
+* `DOMAIN_NAME` – public hostname of your instance. Used to generate webhook URLs.
+* `GENERIC_TIMEZONE` – timezone for n8n, e.g. `Europe/Berlin`.
+* `N8N_PROTOCOL` – `http` (default) or `https`.
+* `WEBHOOK_URL` – custom public webhook URL (automatically derived from `DOMAIN_NAME` when omitted).
+
+Example:
+```bash
+DOMAIN_NAME=example.com GENERIC_TIMEZONE=Europe/Berlin docker compose up --build
+```
+
+Open <http://localhost:5678> in your browser and search for **ImageRouter** in the node panel to start using the node.
 
 ___
 

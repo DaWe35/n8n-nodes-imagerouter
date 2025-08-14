@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  n8n:
+    build: .
+    image: imagerouter-n8n:latest
+    restart: unless-stopped
+    # Map host port to container port
+    ports:
+      - "${PORT-5678}:5678"
+    environment:
+      - N8N_HOST=${DOMAIN_NAME-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL-http}
+      - WEBHOOK_URL=${WEBHOOK_URL-http://localhost:5678/}
+      - NODE_ENV=production
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE-Europe/Berlin}
+      # directory containing the compiled custom node (set in Dockerfile)
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
