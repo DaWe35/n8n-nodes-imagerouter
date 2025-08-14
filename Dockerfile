@@ -11,7 +11,8 @@ COPY nodes ./nodes
 
 # Install dependencies and build the package
 RUN npm ci \
- && npm run build
+ && npm run build \
+ && npm link
 
 # -------- Stage 2: Create final runtime image with n8n installed from npm --------
 FROM node:20-bookworm AS runtime
@@ -40,7 +41,6 @@ USER node
 # 2) Initialise ~/.n8n/custom project (if missing) and link the package into it
 RUN mkdir -p ${N8N_CUSTOM_EXTENSIONS} \
     && cd ${N8N_CUSTOM_EXTENSIONS} \
-    && ( [ -f package.json ] || npm init -y ) \
     && npm link n8n-nodes-imagerouter
 
 # Expose default n8n port and set the startup command
