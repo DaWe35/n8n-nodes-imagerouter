@@ -6,6 +6,7 @@ Build the image and start a local n8n instance with the ImageRouter node already
 
 ```bash
 # From the repository root
+npm run build
 docker compose up --build
 ```
 

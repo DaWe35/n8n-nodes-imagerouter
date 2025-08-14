@@ -13,9 +13,12 @@ services:
       - N8N_SECURE_COOKIE=false
       - WEBHOOK_URL=${WEBHOOK_URL-http://localhost:5678/}
       - GENERIC_TIMEZONE=Europe/Budapest
+      - N8N_LOG_LEVEL=debug
+      - N8N_DIAGNOSTICS_ENABLED=true
+      - N8N_CUSTOM_EXTENSIONS=/home/node/.n8n/custom
     volumes:
       - n8n_data:/home/node/.n8n
-      - ./:/home/node/.n8n/custom/node_modules/n8n-nodes-imagerouter
+      - ./dist:/home/node/.n8n/custom/n8n-nodes-imagerouter
 
 volumes:
   n8n_data:
