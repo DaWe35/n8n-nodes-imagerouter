@@ -171,7 +171,7 @@ export class ImageRouter implements INodeType {
      if (!binaryData) {
       throw new NodeOperationError(this.getNode(), `Binary property "${binaryProperty}" not found on input item`)
      }
-     const buffer = Buffer.from(binaryData.data, (binaryData.encoding as string) || 'base64')
+     const buffer = Buffer.from(binaryData.data, ((binaryData.encoding ?? 'base64') as BufferEncoding))
      form.append('image[]', buffer, {
       filename: binaryData.fileName || 'image',
       contentType: binaryData.mimeType || 'application/octet-stream',
@@ -183,7 +183,7 @@ export class ImageRouter implements INodeType {
       if (!maskData) {
        throw new NodeOperationError(this.getNode(), `Mask binary property "${maskBinaryProperty}" not found`)
       }
-      const maskBuf = Buffer.from(maskData.data, (maskData.encoding as string) || 'base64')
+      const maskBuf = Buffer.from(maskData.data, ((maskData.encoding ?? 'base64') as BufferEncoding))
       form.append('mask[]', maskBuf, {
        filename: maskData.fileName || 'mask',
        contentType: maskData.mimeType || 'application/octet-stream',
