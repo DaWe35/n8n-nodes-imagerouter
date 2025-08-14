@@ -30,11 +30,12 @@ COPY --from=builder /usr/src/app /opt/imagerouter
 RUN mkdir -p ${N8N_CUSTOM_EXTENSIONS} \
     && chown -R node:node /home/node/.n8n /opt/imagerouter
 
-# Link the package following the dev workflow: npm link in the package dir then in ~/.n8n/custom
-USER node
+# 1) Build the package and publish it to npm’s global link store (requires root permissions)
+RUN cd /opt/imagerouter && npm run build && npm link \
+    && chown -R node:node /usr/local/lib/node_modules/n8n-nodes-imagerouter
 
-# 1) Publish the built package to npm’s global link store
-RUN cd /opt/imagerouter && npm run build && npm link
+# Switch to the node user and link the package inside ~/.n8n/custom
+USER node
 
 # 2) Initialise ~/.n8n/custom project (if missing) and link the package into it
 RUN mkdir -p ${N8N_CUSTOM_EXTENSIONS} \
