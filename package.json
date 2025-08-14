@@ -1,7 +1,7 @@
 {
   "name": "n8n-nodes-imagerouter",
   "version": "0.1.0",
-  "description": "",
+  "description": "ImageRouter.io AI Image and Video generator",
   "keywords": [
     "n8n-community-node-package"
   ],
@@ -9,7 +9,7 @@
   "homepage": "https://imagerouter.io",
   "author": {
     "name": "DaWe",
-    "email": ""
+    "email": "ir@myqa.cc"
   },
   "repository": {
     "type": "git",
