@@ -1,5 +1,5 @@
 {
-	"node": "imageRouter",
+    "node": "n8n-nodes-base.ImageRouter",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": [
