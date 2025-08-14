@@ -1,19 +1,20 @@
 {
-	"node": "n8n-nodes-base.NasaPics",
+	"node": "imageRouter",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": [
-		"Miscellaneous"
+		"AI",
+        "Media"
 	],
 	"resources": {
 		"credentialDocumentation": [
 			{
-				"url": ""
+				"url": "https://imagerouter.io/api-keys"
 			}
 		],
 		"primaryDocumentation": [
 			{
-				"url": ""
+				"url": "https://docs.imagerouter.io/"
 			}
 		]
 	}

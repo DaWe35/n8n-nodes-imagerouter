@@ -1,188 +1,221 @@
-import { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import { IExecuteFunctions, INodeExecutionData, NodeConnectionType, IHttpRequestOptions } from 'n8n-workflow'
+import {
+ INodeType,
+ INodeTypeDescription,
+ IDataObject,
+ NodeOperationError,
+} from 'n8n-workflow'
+import FormData from 'form-data'
+import { Buffer } from 'buffer'
 
 export class ImageRouter implements INodeType {
-	description: INodeTypeDescription = {
-		displayName: 'NASA Pics',
-        name: 'ImageRouter',
-        icon: 'file:imagerouter.svg',
-        group: ['transform'],
-        version: 1,
-        subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-        description: 'Generate and edit images with AI',
-        defaults: {
-            name: 'Image Router',
-        },
-        inputs: ['main'],
-        outputs: ['main'],
-        credentials: [
-            {
-                name: 'ImageRouterApi',
-                required: true,
-            },
-        ],
-        requestDefaults: {
-            baseURL: 'https://api.imagerouter.io/v1/openai/',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-        },
-		properties: [
-            {
-                displayName: 'Resource',
-                name: 'resource',
-                type: 'options',
-                noDataExpression: true,
-                options: [
-                    {
-                        name: 'Generate Image',
-                        value: 'images/generations',
-                    },
-                    {
-                        name: 'Generate Videos',
-                        value: 'videos/generations',
-                    },
-                ],
-                default: 'images/generations',
-            },
-            {
-                displayName: 'Operation',
-                name: 'operation',
-                type: 'options',
-                noDataExpression: true,
-                displayOptions: {
-                    show: {
-                        resource: [
-                            'astronomyPictureOfTheDay',
-                        ],
-                    },
-                },
-                options: [
-                    {
-                        name: 'Get',
-                        value: 'get',
-                        action: 'Get the APOD',
-                        description: 'Get the Astronomy Picture of the day',
-                        routing: {
-                            request: {
-                                method: 'GET',
-                                url: '/planetary/apod',
-                            },
-                        },
-                    },
-                ],
-                default: 'get',
-            },
-            {
-                displayName: 'Operation',
-                name: 'operation',
-                type: 'options',
-                noDataExpression: true,
-                displayOptions: {
-                    show: {
-                        resource: [
-                            'marsRoverPhotos',
-                        ],
-                    },
-                },
-                options: [
-                    {
-                        name: 'Get',
-                        value: 'get',
-                        action: 'Get Mars Rover photos',
-                        description: 'Get photos from the Mars Rover',
-                        routing: {
-                            request: {
-                                method: 'GET',
-                            },
-                        },
-                    },
-                ],
-                default: 'get',
-            },
-            {
-                displayName: 'Rover name',
-                description: 'Choose which Mars Rover to get a photo from',
-                required: true,
-                name: 'roverName',
-                type: 'options',
-                options: [
-                    {name: 'Curiosity', value: 'curiosity'},
-                    {name: 'Opportunity', value: 'opportunity'},
-                    {name: 'Perseverance', value: 'perseverance'},
-                    {name: 'Spirit', value: 'spirit'},
-                ],
-                routing: {
-                    request: {
-                        url: '=/mars-photos/api/v1/rovers/{{$value}}/photos',
-                    },
-                },
-                default: 'curiosity',
-                displayOptions: {
-                    show: {
-                        resource: [
-                            'marsRoverPhotos',
-                        ],
-                    },
-                },
-            },
-            {
-                displayName: 'Date',
-                description: 'Earth date',
-                required: true,
-                name: 'marsRoverDate',
-                type: 'dateTime',
-                default:'',
-                displayOptions: {
-                    show: {
-                        resource: [
-                            'marsRoverPhotos',
-                        ],
-                    },
-                },
-                routing: {
-                    request: {
-                        // You've already set up the URL. qs appends the value of the field as a query string
-                        qs: {
-                            earth_date: '={{ new Date($value).toISOString().substr(0,10) }}',
-                        },
-                    },
-                },
-            },
-            {
-                displayName: 'Additional Fields',
-                name: 'additionalFields',
-                type: 'collection',
-                default: {},
-                placeholder: 'Add Field',
-                displayOptions: {
-                    show: {
-                        resource: [
-                            'astronomyPictureOfTheDay',
-                        ],
-                        operation: [
-                            'get',
-                        ],
-                    },
-                },
-                options: [
-                    {
-                        displayName: 'Date',
-                        name: 'apodDate',
-                        type: 'dateTime',
-                        default: '',
-                        routing: {
-                            request: {
-                                // You've already set up the URL. qs appends the value of the field as a query string
-                                qs: {
-                                    date: '={{ new Date($value).toISOString().substr(0,10) }}',
-                                },
-                            },
-                        },
-                    },
-                ],									
-            }
-        
-        ]
-	};
+ description: INodeTypeDescription = {
+  displayName: 'ImageRouter',
+  name: 'imageRouter',
+  icon: 'file:imagerouter.svg',
+  group: ['transform'],
+  version: 1,
+  subtitle: '={{ $parameter.operation + ": " + $parameter.resource }}',
+  description: 'Generate images or videos through ImageRouter',
+  defaults: {
+   name: 'Image Router',
+  },
+  inputs: ['main'] as NodeConnectionType[],
+  outputs: ['main'] as NodeConnectionType[],
+  credentials: [
+   {
+    name: 'ImageRouterApi',
+    required: true,
+   },
+  ],
+  properties: [
+   {
+    displayName: 'Resource',
+    name: 'resource',
+    type: 'options',
+    options: [
+     {
+      name: 'Image',
+      value: 'image',
+     },
+     {
+      name: 'Video',
+      value: 'video',
+     },
+    ],
+    default: 'image',
+   },
+   {
+    displayName: 'Operation',
+    name: 'operation',
+    type: 'options',
+    options: [
+     {
+      name: 'Generate',
+      value: 'generate',
+      action: 'Generate',
+     },
+    ],
+    default: 'generate',
+   },
+   {
+    displayName: 'Prompt',
+    name: 'prompt',
+    type: 'string',
+    required: true,
+    default: '',
+   },
+   {
+    displayName: 'Model',
+    name: 'model',
+    type: 'string',
+    required: true,
+    default: 'test/test',
+   },
+   {
+    displayName: 'Binary Property (Image)',
+    name: 'binaryProperty',
+    type: 'string',
+    default: '',
+    description: 'Name of binary property that contains an image to edit. Leave empty to generate from prompt',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
+   },
+   {
+    displayName: 'Mask Binary Property',
+    name: 'maskBinaryProperty',
+    type: 'string',
+    default: '',
+    description: 'Optional mask image binary property (some models require it)',
+    displayOptions: {
+     show: {
+      resource: ['image'],
+     },
+    },
+   },
+   {
+    displayName: 'Quality',
+    name: 'quality',
+    type: 'options',
+    options: [
+     { name: 'Auto', value: 'auto' },
+     { name: 'Low', value: 'low' },
+     { name: 'Medium', value: 'medium' },
+     { name: 'High', value: 'high' },
+    ],
+    default: 'auto',
+    description: 'Generation quality (if supported by the model)',
+   },
+   {
+    displayName: 'Size',
+    name: 'size',
+    type: 'string',
+    default: 'auto',
+    description: 'auto or WIDTHxHEIGHT (e.g. 1024x1024) depending on model',
+   },
+   {
+    displayName: 'Response Format',
+    name: 'response_format',
+    type: 'options',
+    options: [
+     { name: 'URL', value: 'url' },
+     { name: 'Base64 JSON', value: 'b64_json' },
+    ],
+    default: 'url',
+   },
+  ],
+ }
+
+ async execute(this: IExecuteFunctions) {
+  const items = this.getInputData()
+  const returnData: IDataObject[] = []
+  const baseURL = 'https://api.imagerouter.io/v1/openai'
+
+  for (let i = 0; i < items.length; i++) {
+   const resource = this.getNodeParameter('resource', i) as string
+   const prompt = this.getNodeParameter('prompt', i) as string
+   const model = this.getNodeParameter('model', i) as string
+   const quality = this.getNodeParameter('quality', i) as string
+   const size = this.getNodeParameter('size', i) as string
+   const response_format = this.getNodeParameter('response_format', i) as string
+
+   const binaryProperty = this.getNodeParameter('binaryProperty', i, '') as string
+   const maskBinaryProperty = this.getNodeParameter('maskBinaryProperty', i, '') as string
+
+   let endpoint = ''
+   let options: IHttpRequestOptions = {
+    method: 'POST',
+    headers: {
+     Accept: 'application/json',
+    },
+    url: '',
+   }
+
+   if (resource === 'image' || resource === 'video') {
+    if (binaryProperty) {
+     endpoint = resource === 'image' ? '/images/generations' : '/videos/generations'
+     const form = new FormData()
+     form.append('prompt', prompt)
+     form.append('model', model)
+     // quality applies only for images
+     if (resource === 'image' && quality) form.append('quality', quality)
+     if (size) form.append('size', size)
+     if (response_format) form.append('response_format', response_format)
+
+     const binaryData = items[i].binary?.[binaryProperty]
+     if (!binaryData) {
+      throw new NodeOperationError(this.getNode(), `Binary property "${binaryProperty}" not found on input item`)
+     }
+     const buffer = Buffer.from(binaryData.data, (binaryData.encoding as string) || 'base64')
+     form.append('image[]', buffer, {
+      filename: binaryData.fileName || 'image',
+      contentType: binaryData.mimeType || 'application/octet-stream',
+     })
+
+     // mask applies only for images
+     if (resource === 'image' && maskBinaryProperty) {
+      const maskData = items[i].binary?.[maskBinaryProperty]
+      if (!maskData) {
+       throw new NodeOperationError(this.getNode(), `Mask binary property "${maskBinaryProperty}" not found`)
+      }
+      const maskBuf = Buffer.from(maskData.data, (maskData.encoding as string) || 'base64')
+      form.append('mask[]', maskBuf, {
+       filename: maskData.fileName || 'mask',
+       contentType: maskData.mimeType || 'application/octet-stream',
+      })
+     }
+
+     options.body = form
+     // @ts-ignore
+     options.headers = { ...options.headers, ...form.getHeaders() }
+    } else {
+     endpoint = resource === 'image' ? '/images/generations' : '/videos/generations'
+     options.body = {
+      prompt,
+      model,
+      ...(resource === 'image' ? { quality } : {}),
+      size,
+      response_format,
+     }
+     options.json = true
+    }
+   }
+
+   options.url = `${baseURL}${endpoint}`
+
+   const responseData = await this.helpers.httpRequestWithAuthentication.call(
+    this,
+    'ImageRouterApi',
+    options,
+   )
+
+   returnData.push(responseData as IDataObject)
+  }
+
+  const executionData: INodeExecutionData[] = returnData.map((d) => ({ json: d }))
+  return [executionData]
+ }
 }
