@@ -5,7 +5,7 @@ import {
 } from 'n8n-workflow';
 
 export class ImageRouterApi implements ICredentialType {
-	name = 'ImageRouterApi';
+	name = 'imageRouterApi';
 	displayName = 'ImageRouter API';
 	// Uses the link to this tutorial as an example
 	// Replace with your own docs links when building your own nodes
@@ -16,14 +16,17 @@ export class ImageRouterApi implements ICredentialType {
 			name: 'apiKey',
 			type: 'string',
 			default: '',
+			typeOptions: {
+				password: true,
+			},
 		},
 	];
-	authenticate = {
+	authenticate: IAuthenticateGeneric = {
 		type: 'generic',
 		properties: {
 			headers: {
 				Authorization: '=Bearer {{$credentials.apiKey}}',
 			},
 		},
-	} as IAuthenticateGeneric;
+	};
 }

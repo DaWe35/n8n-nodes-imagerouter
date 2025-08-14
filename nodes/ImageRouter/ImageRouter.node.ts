@@ -24,7 +24,7 @@ export class ImageRouter implements INodeType {
   outputs: ['main'] as NodeConnectionType[],
   credentials: [
    {
-    name: 'ImageRouterApi',
+    name: 'imageRouterApi',
     required: true,
    },
   ],
@@ -44,6 +44,7 @@ export class ImageRouter implements INodeType {
      },
     ],
     default: 'image',
+    noDataExpression: true,
    },
    {
     displayName: 'Operation',
@@ -57,6 +58,7 @@ export class ImageRouter implements INodeType {
      },
     ],
     default: 'generate',
+    noDataExpression: true,
    },
    {
     displayName: 'Prompt',
@@ -77,7 +79,7 @@ export class ImageRouter implements INodeType {
     name: 'binaryProperty',
     type: 'string',
     default: '',
-    description: 'Name of binary property that contains an image to edit. Leave empty to generate from prompt',
+    description: 'Name of binary property that contains an image to edit. Leave empty to generate from prompt.',
     displayOptions: {
      show: {
       resource: ['image', 'video'],
@@ -208,7 +210,7 @@ export class ImageRouter implements INodeType {
 
    const responseData = await this.helpers.httpRequestWithAuthentication.call(
     this,
-    'ImageRouterApi',
+    'imageRouterApi',
     options,
    )
 
