@@ -12,11 +12,11 @@ export class ImageRouter implements INodeType {
  description: INodeTypeDescription = {
   displayName: 'ImageRouter',
   name: 'imageRouter',
-  icon: 'file:imagerouter.svg',
+  icon: 'file:imagerouter-white-transparent.svg',
   group: ['transform'],
   version: 1,
   subtitle: '={{ $parameter.operation + ": " + $parameter.resource }}',
-  description: 'Generate images or videos through ImageRouter',
+  description: 'Generate AI images and videos through ImageRouter.io',
   defaults: {
    name: 'Image Router',
   },
@@ -154,7 +154,7 @@ export class ImageRouter implements INodeType {
     description: 'Name of binary property that contains an image to edit. Leave empty to generate from prompt.',
     displayOptions: {
      show: {
-      resource: ['image', 'video'],
+      operation: ['imageToImage', 'imageToVideo'],
      },
     },
    },
@@ -166,7 +166,7 @@ export class ImageRouter implements INodeType {
     description: 'Optional mask image binary property (some models require it)',
     displayOptions: {
      show: {
-      resource: ['image'],
+      operation: ['imageToImage'],
      },
     },
    },
@@ -175,10 +175,10 @@ export class ImageRouter implements INodeType {
     name: 'quality',
     type: 'options',
     options: [
-     { name: 'Auto', value: 'auto' },
-     { name: 'Low', value: 'low' },
-     { name: 'Medium', value: 'medium' },
-     { name: 'High', value: 'high' },
+     { name: 'auto', value: 'auto' },
+     { name: 'low', value: 'low' },
+     { name: 'medium', value: 'medium' },
+     { name: 'high', value: 'high' },
     ],
     default: 'auto',
     description: 'Generation quality (if supported by the model)',
