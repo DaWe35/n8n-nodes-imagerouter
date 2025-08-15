@@ -43,6 +43,7 @@ export class ImageRouter implements INodeType {
       value: 'video',
      },
      {
+      // eslint-disable-next-line n8n-nodes-base/node-param-resource-with-plural-option
       name: 'Models',
       value: 'models',
      },
@@ -64,12 +65,12 @@ export class ImageRouter implements INodeType {
      {
       name: 'Text to Image',
       value: 'textToImage',
-      action: 'Text to Image',
+      action: 'Text to image',
      },
      {
       name: 'Image to Image',
       value: 'imageToImage',
-      action: 'Image to Image',
+      action: 'Image to image',
      },
     ],
     default: 'textToImage',
@@ -90,12 +91,12 @@ export class ImageRouter implements INodeType {
      {
       name: 'Text to Video',
       value: 'textToVideo',
-      action: 'Text to Video',
+      action: 'Text to video',
      },
      {
       name: 'Image to Video',
       value: 'imageToVideo',
-      action: 'Image to Video',
+      action: 'Image to video',
      },
     ],
     default: 'textToVideo',
@@ -114,9 +115,11 @@ export class ImageRouter implements INodeType {
     },
     options: [
      {
+      // eslint-disable-next-line n8n-nodes-base/node-param-option-name-wrong-for-get-many
       name: 'Get All Models',
       value: 'getAll',
-      action: 'Get All Models',
+      // eslint-disable-next-line n8n-nodes-base/node-param-operation-option-action-wrong-for-get-many
+      action: 'Get all models',
      },
     ],
     default: 'getAll',
@@ -147,11 +150,11 @@ export class ImageRouter implements INodeType {
     },
    },
    {
-    displayName: 'Image (optionaly, binary property)',
+    displayName: 'Image',
     name: 'binaryProperty',
     type: 'string',
     default: '',
-    description: 'Name of binary property that contains an image to edit. Leave empty to generate from prompt.',
+    description: 'Optional binary property that contains an image to edit. Leave empty to generate image from text only.',
     displayOptions: {
      show: {
       operation: ['imageToImage', 'imageToVideo'],
@@ -159,11 +162,11 @@ export class ImageRouter implements INodeType {
     },
    },
    {
-    displayName: 'Image Mask (optionaly, binary property)',
+    displayName: 'Image Mask',
     name: 'maskBinaryProperty',
     type: 'string',
     default: '',
-    description: 'Optional mask image binary property (some models require it)',
+    description: 'Optional mask image binary property (only a few models require it)',
     displayOptions: {
      show: {
       operation: ['imageToImage'],
@@ -175,10 +178,10 @@ export class ImageRouter implements INodeType {
     name: 'quality',
     type: 'options',
     options: [
-     { name: 'auto', value: 'auto' },
-     { name: 'low', value: 'low' },
-     { name: 'medium', value: 'medium' },
-     { name: 'high', value: 'high' },
+     { name: 'auto', value: 'auto' }, // eslint-disable-line n8n-nodes-base/node-param-display-name-miscased
+     { name: 'low', value: 'low' }, // eslint-disable-line n8n-nodes-base/node-param-display-name-miscased
+     { name: 'medium', value: 'medium' }, // eslint-disable-line n8n-nodes-base/node-param-display-name-miscased
+     { name: 'high', value: 'high' }, // eslint-disable-line n8n-nodes-base/node-param-display-name-miscased
     ],
     default: 'auto',
     description: 'Generation quality (if supported by the model)',
@@ -193,7 +196,7 @@ export class ImageRouter implements INodeType {
     name: 'size',
     type: 'string',
     default: 'auto',
-    description: 'auto or WIDTHxHEIGHT (e.g. 1024x1024) depending on model',
+    description: '"auto" or "WIDTHxHEIGHT" (e.g. "1024x1024") depending on model',
     displayOptions: {
      show: {
       resource: ['image', 'video'],
