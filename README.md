@@ -6,18 +6,18 @@
 
 This is an n8n community node. It lets you use [ImageRouter.io](https://imagerouter.io) in your n8n workflows.
 
-ImageRouter.io is a platform for generating images and videos using AI.
+[ImageRouter.io](https://imagerouter.io) is a platform for generating images and videos using AI. [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
-[n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
+## Table of Contents
 
-[Installation](#installation)
-[Operations](#operations)
-[Credentials](#credentials)
-[Compatibility](#compatibility)
-[Usage](#usage)
-[What AI models are available?](#what-ai-models-are-available)
-[Resources](#resources)
-[Development](#development)
+[Installation](#installation)  
+[Operations](#operations)  
+[Credentials](#credentials)  
+[Compatibility](#compatibility)  
+[Usage](#usage)  
+[What AI models are available?](#what-ai-models-are-available)  
+[Resources](#resources)  
+[Development](#development)  
 
 ## Installation
 
