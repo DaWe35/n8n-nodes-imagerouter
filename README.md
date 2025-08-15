@@ -1,5 +1,32 @@
 # [ImageRouter](https://imagerouter.io) Node for n8n
 
+## Screenshots
+<img width="841" height="545" alt="Screenshot_20250815_153907" src="https://github.com/user-attachments/assets/2fb5711d-14fb-4af0-8afb-0b3a4375501a" />
+<img width="1393" height="935" alt="Screenshot_20250815_153957" src="https://github.com/user-attachments/assets/2e736fcc-b6e4-42cb-a006-29e651b02f8a" />
+<img width="478" height="594" alt="Screenshot_20250815_153821" src="https://github.com/user-attachments/assets/4ef5bee7-69cf-4da4-9902-cb8eeb32c8d1" />
+
+
+## How to install
+
+The package is published on [NPM](
+https://www.npmjs.com/package/n8n-nodes-imagerouter), so it's pretty easy to install in n8n.
+
+1. Open `Settings`: <img width="498" height="223" alt="Screenshot_20250815_154224" src="https://github.com/user-attachments/assets/3c4b8293-81c2-421c-acec-ee018f6d919d" />
+2. Go to `Community Nodes`: <img width="1010" height="741" alt="Screenshot_20250815_154251" src="https://github.com/user-attachments/assets/90c3732b-41d7-4130-8eef-1a0d09dd22eb" />
+3. Install a new community node. Enter `n8n-nodes-imagerouter`: <img width="1010" height="741" alt="Screenshot_20250815_154304" src="https://github.com/user-attachments/assets/782095a7-e3c2-4fa9-991e-82c9fe9c1d89" />
+
+## Get an API key:
+
+Register an [ImageRouter](https://imagerouter.io) account, then go to https://imagerouter.io/api-keys
+
+## What models are available?
+
+More than 80+ image and video model, see the full list here: https://imagerouter.io/models
+
+or download as JSON: https://api.imagerouter.io/v1/models
+
+# n8n Node Development
+
 ## Quick start (Docker)
 
 Build the image and start a local n8n instance with the ImageRouter node already available:
