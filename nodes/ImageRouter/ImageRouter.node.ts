@@ -42,30 +42,85 @@ export class ImageRouter implements INodeType {
       name: 'Video',
       value: 'video',
      },
+     {
+      name: 'Models',
+      value: 'models',
+     },
     ],
     default: 'image',
     noDataExpression: true,
    },
+   // Operation for Image resource
    {
     displayName: 'Operation',
     name: 'operation',
     type: 'options',
+    displayOptions: {
+     show: {
+      resource: ['image'],
+     },
+    },
     options: [
      {
-      name: 'Generate',
-      value: 'generate',
-      action: 'Generate',
+      name: 'Text to Image',
+      value: 'textToImage',
+      action: 'Text to Image',
+     },
+     {
+      name: 'Image to Image',
+      value: 'imageToImage',
+      action: 'Image to Image',
      },
     ],
-    default: 'generate',
+    default: 'textToImage',
     noDataExpression: true,
    },
+
+   // Operation for Video resource
    {
-    displayName: 'Prompt',
-    name: 'prompt',
-    type: 'string',
-    required: true,
-    default: '',
+    displayName: 'Operation',
+    name: 'operation',
+    type: 'options',
+    displayOptions: {
+     show: {
+      resource: ['video'],
+     },
+    },
+    options: [
+     {
+      name: 'Text to Video',
+      value: 'textToVideo',
+      action: 'Text to Video',
+     },
+     {
+      name: 'Image to Video',
+      value: 'imageToVideo',
+      action: 'Image to Video',
+     },
+    ],
+    default: 'textToVideo',
+    noDataExpression: true,
+   },
+
+   // Operation for Models resource
+   {
+    displayName: 'Operation',
+    name: 'operation',
+    type: 'options',
+    displayOptions: {
+     show: {
+      resource: ['models'],
+     },
+    },
+    options: [
+     {
+      name: 'Get All Models',
+      value: 'getAll',
+      action: 'Get All Models',
+     },
+    ],
+    default: 'getAll',
+    noDataExpression: true,
    },
    {
     displayName: 'Model',
@@ -73,9 +128,26 @@ export class ImageRouter implements INodeType {
     type: 'string',
     required: true,
     default: 'test/test',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
    },
    {
-    displayName: 'Binary Property (Image)',
+    displayName: 'Prompt',
+    name: 'prompt',
+    type: 'string',
+    required: true,
+    default: '',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
+   },
+   {
+    displayName: 'Image (optionaly, binary property)',
     name: 'binaryProperty',
     type: 'string',
     default: '',
@@ -87,7 +159,7 @@ export class ImageRouter implements INodeType {
     },
    },
    {
-    displayName: 'Mask Binary Property',
+    displayName: 'Image Mask (optionaly, binary property)',
     name: 'maskBinaryProperty',
     type: 'string',
     default: '',
@@ -110,6 +182,11 @@ export class ImageRouter implements INodeType {
     ],
     default: 'auto',
     description: 'Generation quality (if supported by the model)',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
    },
    {
     displayName: 'Size',
@@ -117,6 +194,11 @@ export class ImageRouter implements INodeType {
     type: 'string',
     default: 'auto',
     description: 'auto or WIDTHxHEIGHT (e.g. 1024x1024) depending on model',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
    },
    {
     displayName: 'Response Format',
@@ -127,6 +209,11 @@ export class ImageRouter implements INodeType {
      { name: 'Base64 JSON', value: 'b64_json' },
     ],
     default: 'url',
+    displayOptions: {
+     show: {
+      resource: ['image', 'video'],
+     },
+    },
    },
   ],
  }
@@ -134,35 +221,40 @@ export class ImageRouter implements INodeType {
  async execute(this: IExecuteFunctions) {
   const items = this.getInputData()
   const returnData: IDataObject[] = []
-  const baseURL = 'https://api.imagerouter.io/v1/openai'
+  const baseURL = 'https://api.imagerouter.io/v1'
 
   for (let i = 0; i < items.length; i++) {
    const resource = this.getNodeParameter('resource', i) as string
-   const prompt = this.getNodeParameter('prompt', i) as string
-   const model = this.getNodeParameter('model', i) as string
-   const quality = this.getNodeParameter('quality', i) as string
-   const size = this.getNodeParameter('size', i) as string
-   const response_format = this.getNodeParameter('response_format', i) as string
-
-   const binaryProperty = this.getNodeParameter('binaryProperty', i, '') as string
-   const maskBinaryProperty = this.getNodeParameter('maskBinaryProperty', i, '') as string
 
    let endpoint = ''
    let options: IHttpRequestOptions = {
-    method: 'POST',
+    method: 'GET',
     headers: {
      Accept: 'application/json',
     },
     url: '',
    }
 
-   if (resource === 'image' || resource === 'video') {
+   if (resource === 'models') {
+    endpoint = '/models'
+    options.method = 'GET'
+    options.json = true
+   } else if (resource === 'image' || resource === 'video') {
+    options.method = 'POST'
+    const prompt = this.getNodeParameter('prompt', i) as string
+    const model = this.getNodeParameter('model', i) as string
+    const quality = this.getNodeParameter('quality', i) as string
+    const size = this.getNodeParameter('size', i) as string
+    const response_format = this.getNodeParameter('response_format', i) as string
+
+    const binaryProperty = this.getNodeParameter('binaryProperty', i, '') as string
+    const maskBinaryProperty = this.getNodeParameter('maskBinaryProperty', i, '') as string
+
     if (binaryProperty) {
-     endpoint = resource === 'image' ? '/images/generations' : '/videos/generations'
+     endpoint = resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations'
      const form = new FormData()
      form.append('prompt', prompt)
      form.append('model', model)
-     // quality applies only for images
      if (resource === 'image' && quality) form.append('quality', quality)
      if (size) form.append('size', size)
      if (response_format) form.append('response_format', response_format)
@@ -177,7 +269,6 @@ export class ImageRouter implements INodeType {
       contentType: binaryData.mimeType || 'application/octet-stream',
      })
 
-     // mask applies only for images
      if (resource === 'image' && maskBinaryProperty) {
       const maskData = items[i].binary?.[maskBinaryProperty]
       if (!maskData) {
@@ -194,7 +285,7 @@ export class ImageRouter implements INodeType {
      // @ts-ignore
      options.headers = { ...options.headers, ...form.getHeaders() }
     } else {
-     endpoint = resource === 'image' ? '/images/generations' : '/videos/generations'
+     endpoint = resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations'
      options.body = {
       prompt,
       model,
