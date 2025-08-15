@@ -32,7 +32,14 @@ For CLI install, follow the [installation guide](https://docs.n8n.io/integration
 
 ## Operations
 
-_List the operations supported by your node._
+- **Image**
+  - Text to Image
+  - Image to Image
+- **Video**
+  - Text to Video
+  - Image to Video
+- **Models**
+  - Get All Models
 
 ## Credentials
 
