@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DaWe35/ImageRouter-n8n"
+    "url": "https://github.com/DaWe35/n8n-nodes-imagerouter.git"
   },
   "engines": {
     "node": ">=20.15"
