@@ -9,7 +9,6 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import FormData from 'form-data';
-import { Buffer } from 'buffer';
 
 export class ImageRouter implements INodeType {
 	description: INodeTypeDescription = {
@@ -274,10 +273,13 @@ export class ImageRouter implements INodeType {
 							`Binary property "${binaryProperty}" not found on input item`,
 						);
 					}
-					const buffer = Buffer.from(
-						binaryData.data,
-						(binaryData.encoding ?? 'base64') as BufferEncoding,
-					);
+					const buffer = await this.helpers.getBinaryDataBuffer(i, binaryProperty);
+					if (!buffer) {
+						throw new NodeOperationError(
+							this.getNode(),
+							`Binary property "${binaryProperty}" not found on input item`,
+						);
+					}
 					form.append('image[]', buffer, {
 						filename: binaryData.fileName || 'image',
 						contentType: binaryData.mimeType || 'application/octet-stream',
@@ -291,10 +293,13 @@ export class ImageRouter implements INodeType {
 								`Mask binary property "${maskBinaryProperty}" not found`,
 							);
 						}
-						const maskBuf = Buffer.from(
-							maskData.data,
-							(maskData.encoding ?? 'base64') as BufferEncoding,
-						);
+						const maskBuf = await this.helpers.getBinaryDataBuffer(i, maskBinaryProperty);
+						if (!maskBuf) {
+							throw new NodeOperationError(
+								this.getNode(),
+								`Mask binary property "${maskBinaryProperty}" not found`,
+							);
+						}
 						form.append('mask[]', maskBuf, {
 							filename: maskData.fileName || 'mask',
 							contentType: maskData.mimeType || 'application/octet-stream',
