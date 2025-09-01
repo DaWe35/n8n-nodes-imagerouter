@@ -8,7 +8,6 @@ import {
 	IDataObject,
 	NodeOperationError,
 } from 'n8n-workflow';
-import FormData from 'form-data';
 
 export class ImageRouter implements INodeType {
 	description: INodeTypeDescription = {
@@ -259,12 +258,13 @@ export class ImageRouter implements INodeType {
 				if (binaryProperty) {
 					endpoint =
 						resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations';
-					const form = new FormData();
-					form.append('prompt', prompt);
-					form.append('model', model);
-					if (resource === 'image' && quality) form.append('quality', quality);
-					if (size) form.append('size', size);
-					if (response_format) form.append('response_format', response_format);
+					const formData: Record<string, unknown> = {
+						prompt,
+						model,
+						...(resource === 'image' && quality ? { quality } : {}),
+						...(size ? { size } : {}),
+						...(response_format ? { response_format } : {}),
+					};
 
 					const binaryData = items[i].binary?.[binaryProperty];
 					if (!binaryData) {
@@ -280,10 +280,13 @@ export class ImageRouter implements INodeType {
 							`Binary property "${binaryProperty}" not found on input item`,
 						);
 					}
-					form.append('image[]', buffer, {
-						filename: binaryData.fileName || 'image',
-						contentType: binaryData.mimeType || 'application/octet-stream',
-					});
+					formData['image[]'] = {
+						value: buffer,
+						options: {
+							filename: binaryData.fileName || 'image',
+							contentType: binaryData.mimeType || 'application/octet-stream',
+						},
+					} as unknown;
 
 					if (resource === 'image' && maskBinaryProperty) {
 						const maskData = items[i].binary?.[maskBinaryProperty];
@@ -300,15 +303,16 @@ export class ImageRouter implements INodeType {
 								`Mask binary property "${maskBinaryProperty}" not found`,
 							);
 						}
-						form.append('mask[]', maskBuf, {
-							filename: maskData.fileName || 'mask',
-							contentType: maskData.mimeType || 'application/octet-stream',
-						});
+						formData['mask[]'] = {
+							value: maskBuf,
+							options: {
+								filename: maskData.fileName || 'mask',
+								contentType: maskData.mimeType || 'application/octet-stream',
+							},
+						} as unknown;
 					}
 
-					options.body = form;
-					// @ts-ignore
-					options.headers = { ...options.headers, ...form.getHeaders() };
+					(options as unknown as { formData: Record<string, unknown> }).formData = formData;
 				} else {
 					endpoint =
 						resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations';
