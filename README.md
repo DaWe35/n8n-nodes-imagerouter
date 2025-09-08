@@ -75,3 +75,9 @@ docker compose up --build
 ```
 
 Open http://localhost:5678 in your browser and search for **ImageRouter** in the node panel to start using the node.
+
+Publish to NPM:
+
+```bash
+npm publish
+```
