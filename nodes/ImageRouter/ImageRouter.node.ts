@@ -151,6 +151,30 @@ export class ImageRouter implements INodeType {
 				},
 			},
 			{
+				displayName: 'Prompt Source',
+				name: 'promptType',
+				type: 'options',
+				options: [
+					{
+						name: 'Manual Input',
+						value: 'define',
+						description: 'Enter the prompt string manually',
+					},
+					{
+						name: 'From Chat Input',
+						value: 'chatInput',
+						description: 'Use the "{{ $json.chatInput }}" variable automatically',
+					},
+				],
+				default: 'define',
+				description: 'Choose how to provide the prompt. Select "From Chat Input" to automatically use the chat input variable.',
+				displayOptions: {
+					show: {
+						resource: ['image', 'video'],
+					},
+				},
+			},
+			{
 				displayName: 'Prompt',
 				name: 'prompt',
 				type: 'string',
@@ -159,6 +183,7 @@ export class ImageRouter implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['image', 'video'],
+						promptType: ['define'],
 					},
 				},
 			},
@@ -288,7 +313,16 @@ export class ImageRouter implements INodeType {
 				options.json = true;
 			} else if (resource === 'image' || resource === 'video') {
 				options.method = 'POST';
-				const prompt = this.getNodeParameter('prompt', i) as string;
+				let prompt = '';
+				const promptType = this.getNodeParameter('promptType', i) as string;
+				if (promptType === 'chatInput') {
+					prompt = items[i].json.chatInput as string;
+					if (!prompt) {
+						throw new NodeOperationError(this.getNode(), 'Chat Input is empty or missing');
+					}
+				} else {
+					prompt = this.getNodeParameter('prompt', i) as string;
+				}
 				const model = this.getNodeParameter('model', i) as string;
 				const quality = this.getNodeParameter('quality', i) as string;
 				const size = this.getNodeParameter('size', i) as string;
