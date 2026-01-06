@@ -7,6 +7,8 @@ import {
 	INodeTypeDescription,
 	IDataObject,
 	NodeOperationError,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
 } from 'n8n-workflow';
 
 export class ImageRouter implements INodeType {
@@ -30,6 +32,13 @@ export class ImageRouter implements INodeType {
 			},
 		],
 		properties: [
+			{
+				displayName: 'Base URL',
+				name: 'baseURL',
+				type: 'string',
+				default: 'https://api.imagerouter.io/v1',
+				description: 'Override the default API URL',
+			},
 			{
 				displayName: 'Resource',
 				name: 'resource',
@@ -129,9 +138,12 @@ export class ImageRouter implements INodeType {
 			{
 				displayName: 'Model',
 				name: 'model',
-				type: 'string',
+				type: 'options',
 				required: true,
-				default: 'test/test',
+				default: '',
+				typeOptions: {
+					loadOptionsMethod: 'getModels',
+				},
 				displayOptions: {
 					show: {
 						resource: ['image', 'video'],
@@ -223,12 +235,42 @@ export class ImageRouter implements INodeType {
 		],
 	};
 
+	methods = {
+		loadOptions: {
+			async getModels(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
+				const resource = this.getCurrentNodeParameter('resource') as string;
+				const baseURL = this.getCurrentNodeParameter('baseURL') as string;
+				const options: IHttpRequestOptions = {
+					method: 'GET',
+					url: `${baseURL}/models`,
+					json: true,
+				};
+				const response = await this.helpers.httpRequest(options);
+				const models = response as Record<string, { output: string[] }>;
+				const results: INodePropertyOptions[] = [];
+
+				for (const modelId of Object.keys(models)) {
+					const modelData = models[modelId];
+					if (resource === 'image' && !modelData.output.includes('image')) continue;
+					if (resource === 'video' && !modelData.output.includes('video')) continue;
+
+					results.push({
+						name: modelId,
+						value: modelId,
+					});
+				}
+
+				return results;
+			},
+		},
+	};
+
 	async execute(this: IExecuteFunctions) {
 		const items = this.getInputData();
 		const returnData: IDataObject[] = [];
-		const baseURL = 'https://api.imagerouter.io/v1';
 
 		for (let i = 0; i < items.length; i++) {
+			const baseURL = this.getNodeParameter('baseURL', i) as string;
 			const resource = this.getNodeParameter('resource', i) as string;
 
 			let endpoint = '';
