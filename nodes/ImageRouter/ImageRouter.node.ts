@@ -126,18 +126,30 @@ export class ImageRouter implements INodeType {
 				default: 'getAll',
 				noDataExpression: true,
 			},
-			{
-				displayName: 'Model',
-				name: 'model',
-				type: 'string',
-				required: true,
-				default: 'test/test',
-				displayOptions: {
-					show: {
-						resource: ['image', 'video'],
-					},
+		{
+			displayName: 'Model',
+			name: 'model',
+			type: 'string',
+			required: true,
+			default: 'test/test',
+			displayOptions: {
+				show: {
+					resource: ['image'],
 				},
 			},
+		},
+		{
+			displayName: 'Model',
+			name: 'model',
+			type: 'string',
+			required: true,
+			default: 'ir/test-video',
+			displayOptions: {
+				show: {
+					resource: ['video'],
+				},
+			},
+		},
 			{
 				displayName: 'Prompt',
 				name: 'prompt',
@@ -212,11 +224,41 @@ export class ImageRouter implements INodeType {
 				options: [
 					{ name: 'URL', value: 'url' },
 					{ name: 'Base64 JSON', value: 'b64_json' },
+					{ name: 'Base64 Ephemeral', value: 'b64_ephemeral' },
 				],
 				default: 'url',
 				displayOptions: {
 					show: {
 						resource: ['image', 'video'],
+					},
+				},
+			},
+			{
+				displayName: 'Output Format',
+				name: 'output_format',
+				type: 'options',
+				options: [
+					{ name: 'PNG', value: 'png' },
+					{ name: 'JPEG', value: 'jpeg' },
+					{ name: 'WEBP', value: 'webp' },
+				],
+				default: 'webp',
+				description: 'Output image format',
+				displayOptions: {
+					show: {
+						resource: ['image'],
+					},
+				},
+			},
+			{
+				displayName: 'Seconds',
+				name: 'seconds',
+				type: 'string',
+				default: 'auto',
+				description: 'Duration of the video in seconds or "auto"',
+				displayOptions: {
+					show: {
+						resource: ['video'],
 					},
 				},
 			},
@@ -251,21 +293,37 @@ export class ImageRouter implements INodeType {
 				const quality = this.getNodeParameter('quality', i) as string;
 				const size = this.getNodeParameter('size', i) as string;
 				const response_format = this.getNodeParameter('response_format', i) as string;
+				const output_format = this.getNodeParameter('output_format', i, '') as string;
+				const seconds = this.getNodeParameter('seconds', i, 'auto') as string;
 
 				const binaryProperty = this.getNodeParameter('binaryProperty', i, '') as string;
 				const maskBinaryProperty = this.getNodeParameter('maskBinaryProperty', i, '') as string;
 
-				if (binaryProperty) {
-					endpoint =
-						resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations';
-					const formData: Record<string, unknown> = {
-						prompt,
-						model,
-						...(resource === 'image' && quality ? { quality } : {}),
-						...(size ? { size } : {}),
-						...(response_format ? { response_format } : {}),
-					};
+				if (resource === 'image') {
+					endpoint = '/openai/images/edits';
+				} else if (resource === 'video') {
+					endpoint = '/openai/videos/generations';
+				}
+				const formData = new FormData();
+				formData.append('prompt', prompt);
+				formData.append('model', model);
+				if (resource === 'image' && quality) {
+					formData.append('quality', quality);
+				}
+				if (size) {
+					formData.append('size', size);
+				}
+				if (response_format) {
+					formData.append('response_format', response_format);
+				}
+				if (resource === 'image' && output_format) {
+					formData.append('output_format', output_format);
+				}
+				if (resource === 'video' && seconds) {
+					formData.append('seconds', String(seconds));
+				}
 
+				if (binaryProperty) {
 					const binaryData = items[i].binary?.[binaryProperty];
 					if (!binaryData) {
 						throw new NodeOperationError(
@@ -280,13 +338,10 @@ export class ImageRouter implements INodeType {
 							`Binary property "${binaryProperty}" not found on input item`,
 						);
 					}
-					formData['image[]'] = {
-						value: buffer,
-						options: {
-							filename: binaryData.fileName || 'image',
-							contentType: binaryData.mimeType || 'application/octet-stream',
-						},
-					} as unknown;
+					const imageBlob = new Blob([new Uint8Array(buffer)], {
+						type: binaryData.mimeType || 'application/octet-stream',
+					});
+					formData.append('image[]', imageBlob, binaryData.fileName || 'image');
 
 					if (resource === 'image' && maskBinaryProperty) {
 						const maskData = items[i].binary?.[maskBinaryProperty];
@@ -303,28 +358,15 @@ export class ImageRouter implements INodeType {
 								`Mask binary property "${maskBinaryProperty}" not found`,
 							);
 						}
-						formData['mask[]'] = {
-							value: maskBuf,
-							options: {
-								filename: maskData.fileName || 'mask',
-								contentType: maskData.mimeType || 'application/octet-stream',
-							},
-						} as unknown;
+						const maskBlob = new Blob([new Uint8Array(maskBuf)], {
+							type: maskData.mimeType || 'application/octet-stream',
+						});
+						formData.append('mask[]', maskBlob, maskData.fileName || 'mask');
 					}
-
-					(options as unknown as { formData: Record<string, unknown> }).formData = formData;
-				} else {
-					endpoint =
-						resource === 'image' ? '/openai/images/generations' : '/openai/videos/generations';
-					options.body = {
-						prompt,
-						model,
-						...(resource === 'image' ? { quality } : {}),
-						size,
-						response_format,
-					};
-					options.json = true;
 				}
+
+				options.body = formData;
+
 			}
 
 			options.url = `${baseURL}${endpoint}`;
