@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-imagerouter",
-  "version": "0.2",
+  "version": "0.2.0",
   "description": "ImageRouter.io AI Image and Video generator",
   "keywords": [
     "n8n-community-node-package"
